@@ -9,14 +9,21 @@ import java.util.Map;
  * @date: 12.10.2016.
  */
 public class Coder {
+    private static int border;
+
     public static void main(String[] args) {
         String text;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
+            System.out.println("Enter your text bellow: ");
             text = reader.readLine();
+            System.out.print("Enter border: ");
+            border = Integer.parseInt(reader.readLine());
         } catch (IOException e) {
+            border = 1;
             e.printStackTrace();
             text = "";
         }
+        FileWorker.write("config.properties", "border = " + border + "\nlength = " + text.length());
         FileWorker.write("encoded.txt", String.valueOf(encode(text)));
     }
 
@@ -41,8 +48,11 @@ public class Coder {
                     break;
                 }
             }
-            lowOld = lowOld + (highOld - lowOld) * low;
-            highOld = lowOld + ((highOld - lowOld)) * high;
+            double lowNew, highNew;
+            lowNew = lowOld + (highOld - lowOld) * low / border;
+            highNew = lowOld + ((highOld - lowOld)) * high / border;
+            lowOld = lowNew;
+            highOld = highNew;
             System.out.println(lowOld + " " + highOld);
         }
         return lowOld;
@@ -52,7 +62,7 @@ public class Coder {
         Map<Character, Integer> symbolFrequencies = buildSymbolFrequencies(text);
         Map<Character, Double> symbolWeights = new HashMap<>();
         for (Map.Entry<Character, Integer> frequency : symbolFrequencies.entrySet()) {
-            Double weight = (double) frequency.getValue() / text.length();
+            Double weight = (double) (frequency.getValue() * border / text.length());
             symbolWeights.put(frequency.getKey(), weight);
         }
         return symbolWeights;

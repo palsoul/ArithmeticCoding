@@ -1,17 +1,22 @@
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.util.Properties;
 
 /**
  * @author: Brotherdos
  * @date: 17.10.2016.
  */
 public class Decoder {
+    private static int border;
+    private static int length;
+
     public static void main(String[] args) {
-        try {
+        Properties properties = new Properties();
+        try (FileInputStream fis = new FileInputStream("config.properties")){
+            properties.load(fis);
+            border = Integer.parseInt(properties.getProperty("border"));
+            length = Integer.parseInt(properties.getProperty("length"));
             FileWorker.write("decoded.txt", decode(FileWorker.read("encoded.txt")));
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -28,21 +33,14 @@ public class Decoder {
         }
         String[][] symbolRanges = buildSymbolRanges(dictionary);
 
-        int length = 0;
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
-            length = Integer.parseInt(reader.readLine());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         while (length > 0) {
             for (String[] symbolRange : symbolRanges) {
                 if ((Double.parseDouble(symbolRange[1]) < code) && (code < Double.parseDouble(symbolRange[2]))) {
                     text.append(symbolRange[0]);
+                    System.out.println(length + ": " + symbolRange[0] + ": " + code);
                     double low = Double.parseDouble(symbolRange[1]);
                     double high = Double.parseDouble(symbolRange[2]);
-                    code = (code - low) / (high - low);
-                    System.out.println(code);
+                    code = border * (code - low) / (high - low);
                     break;
                 }
             }
